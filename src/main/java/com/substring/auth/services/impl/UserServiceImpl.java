@@ -8,6 +8,8 @@ import com.substring.auth.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -31,27 +33,52 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto getUserByEmail(String email) {
-        return null;
+    public UserDto getUserByEmail(String email) throws Exception {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(()-> new Exception("User not found with id: " + email));
+        return userMapper.toDto(user);
     }
 
     @Override
-    public UserDto updateUser(UserDto userDto, String userId) {
-        return null;
+    public UserDto updateUser(UserDto userDto, String userId) throws Exception {
+        User user = userRepository.findById(UUID.fromString(userId))
+                .orElseThrow(()-> new Exception("User not found with id: " + userId));
+
+        if (userDto.getEmail() != null && !userDto.getEmail().isBlank()){
+            user.setEmail(userDto.getEmail());
+        }
+        if (userDto.getName() != null && !userDto.getName().isBlank()){
+            user.setName(userDto.getName());
+        }
+        if (userDto.getPassword() != null && !userDto.getPassword().isBlank()){
+            user.setPassword(userDto.getPassword());
+        }
+        if (userDto.getImage() != null && !userDto.getImage().isBlank()){
+            user.setImage(userDto.getImage());
+        }
+
+        return userMapper.toDto(userRepository.save(user));
     }
 
     @Override
-    public void deleteUser(String userId) {
-
+    public void deleteUser(String userId) throws Exception {
+        User user = userRepository.findById(UUID.fromString(userId))
+                .orElseThrow(()-> new Exception("User not found with id: " + userId));
+        userRepository.delete(user);
     }
 
     @Override
-    public UserDto getUserById(String userId) {
-        return null;
+    public UserDto getUserById(String userId) throws Exception {
+        User user = userRepository.findById(UUID.fromString(userId))
+                .orElseThrow(()-> new Exception("User not found with id: " + userId));
+        return userMapper.toDto(user);
     }
 
     @Override
     public Iterable<UserDto> getAllUser() {
-        return null;
+        return userRepository.findAll()
+                .stream()
+                .map(userMapper::toDto)
+                .toList();
     }
 }

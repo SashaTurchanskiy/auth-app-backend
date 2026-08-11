@@ -6,13 +6,13 @@ public interface UserService {
 
     UserDto createUser(UserDto userDto);
 
-    UserDto getUserByEmail(String email);
+    UserDto getUserByEmail(String email) throws Exception;
 
-    UserDto updateUser(UserDto userDto, String userId);
+    UserDto updateUser(UserDto userDto, String userId) throws Exception;
 
-    void deleteUser(String userId);
+    void deleteUser(String userId) throws Exception;
 
-    UserDto getUserById(String userId);
+    UserDto getUserById(String userId) throws Exception;
 
     Iterable<UserDto> getAllUser();
 }
