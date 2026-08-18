@@ -4,6 +4,7 @@ import com.substring.auth.dtos.UserDto;
 import com.substring.auth.services.AuthService;
 import com.substring.auth.services.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -11,9 +12,13 @@ import org.springframework.stereotype.Service;
 public class AuthServiceImpl implements AuthService {
 
     private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserDto registerUser(UserDto userDto) {
-        return null;
+
+        userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        UserDto userDto1 = userService.createUser(userDto);
+        return userDto1;
     }
 }
