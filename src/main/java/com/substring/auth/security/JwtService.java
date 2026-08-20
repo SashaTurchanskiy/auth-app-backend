@@ -2,9 +2,9 @@ package com.substring.auth.security;
 
 import com.substring.auth.entities.Role;
 import com.substring.auth.entities.User;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SecureDigestAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -56,7 +56,45 @@ public class JwtService {
                                 "roles", roles,
                                 "typ", "access"
                         ))
-                .signWith(key, SignatureAlgorithm.HS256)
+                .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
     }
+
+    //generate refresh token
+    public String generateRefreshToken(User user, String jti){
+        Instant now = Instant.now();
+        return Jwts.builder()
+                .id(jti)
+                .subject(user.getId().toString())
+                .issuer(issuer)
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusSeconds(refreshTtlSeconds)))
+                .claim("typ", "refresh")
+                .signWith(key, SignatureAlgorithm.HS512)
+                .compact();
+    }
+
+    //parse token
+    public Jws<Claims> parse(String token){
+        try {
+            return Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
+        }catch (JwtException ex){
+            throw ex;
+        }
+    }
+
+    public boolean isAccessToken(String token){
+        Claims c = parse(token).getPayload();
+        return "access".equals(c.get("typ"));
+    }
+
+    public UUID getUserId(String token){
+        Claims c = parse(token).getPayload();
+        return UUID.fromString(c.getSubject());
+    }
+
+    public String getJti(String token){
+        return parse(token).getPayload().getId();
+    }
+
 }
